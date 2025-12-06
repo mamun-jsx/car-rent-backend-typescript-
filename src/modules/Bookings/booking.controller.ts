@@ -4,8 +4,21 @@ import { bookingService } from "./booking.service";
 //? ================================Create booking ==========================================================
 const createBooking = async (req: Request, res: Response) => {
   const payload = req.body;
-
+  const {
+    customer_id,
+    vehicle_id,
+    rent_start_date,
+    rent_end_date,
+    total_price: number,
+  } = req.body;
+  
   try {
+    if (!customer_id || !vehicle_id || !rent_start_date || !rent_end_date) {
+      return res.status(400).json({ message: "All fields are required" });
+    } else if (rent_end_date < rent_start_date) {
+      res.status(400).json({ message: "End date must be after start date" });
+      return;
+    }
     const result = await bookingService.createBooking(payload);
     res
       .status(201)
