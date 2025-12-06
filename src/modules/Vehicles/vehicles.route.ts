@@ -9,4 +9,3 @@ route.put("/api/v1/vehicles/:vehicleId", vehicleControllers.updateVehicle);
 route.delete("/api/v1/vehicles/:vehicleId", vehicleControllers.deleteVehicle);
 
 export const vehicleRoute = route;
-

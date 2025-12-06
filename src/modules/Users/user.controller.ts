@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { userServices } from "./user.service";
 
-// ===============================Create User ==========================================================
+//? ===============================Create User ==========================================================
 const createUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.createUser(req?.body);
@@ -14,6 +14,7 @@ const createUser = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error?.message });
   }
 };
+//? =============================== Get Users ==========================================================
 const getUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getUser();
@@ -26,9 +27,8 @@ const getUser = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error?.message });
   }
 };
-const getSingleUser = async (req: Request, res: Response) => {};
 
-// =============================== Update User ==========================================================
+//? =============================== Update User ==========================================================
 const updateUser = async (req: Request, res: Response) => {
   const { role } = req.body;
   const { userId } = req.params;
@@ -47,6 +47,7 @@ const updateUser = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error?.message });
   }
 };
+//? =============================== Delete User ==========================================================
 const deleteUser = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
@@ -65,7 +66,6 @@ const deleteUser = async (req: Request, res: Response) => {
 export const userControllers = {
   createUser,
   getUser,
-  getSingleUser,
   updateUser,
   deleteUser,
 };
