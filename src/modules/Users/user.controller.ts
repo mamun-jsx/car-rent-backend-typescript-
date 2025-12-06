@@ -47,7 +47,20 @@ const updateUser = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error?.message });
   }
 };
-const deleteUser = async (req: Request, res: Response) => {};
+const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const result = await userServices.deleteUser(userId as string | number);
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully",
+            data: result,
+        });
+    } catch (error:any) {
+        res.status(500).json({ success: false, message: error?.message });
+    }
+};
+
 
 export const userControllers = {
   createUser,
