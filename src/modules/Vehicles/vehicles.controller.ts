@@ -5,13 +5,11 @@ import { vehicleServices } from "./vehicles.service";
 const getAllVehicles = async (req: Request, res: Response) => {
   try {
     const result = await vehicleServices.getAllVehicles();
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "vehicle data is fetched",
-        data: result.rows,
-      });
+    res.status(200).json({
+      success: true,
+      message: "vehicle data is fetched",
+      data: result.rows,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error?.message });
   }
@@ -30,6 +28,15 @@ const createVehicle = async (req: Request, res: Response) => {
 
 //? ================================ Get single vehicle ================================
 const getSingleVehicle = async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
+  const result = await vehicleServices.getSingleVehicle(
+    vehicleId as string | number
+  );
+  res.status(200).json({
+    success: true,
+    message: "vehicle details fetched",
+    data: result.rows[0],
+  });
   try {
   } catch (error: any) {
     res.status(500).json({ success: false, message: error?.message });

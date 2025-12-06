@@ -1,8 +1,8 @@
 import { pool } from "../../config/db";
 // ? ============================== Get All Vehicles ==========================================================
 const getAllVehicles = async () => {
-    const result  = await pool.query(`SELECT * FROM vehicles`);
-    return result
+  const result = await pool.query(`SELECT * FROM vehicles`);
+  return result;
 };
 
 // ? ============================== Create Vehicle ==========================================================
@@ -32,7 +32,12 @@ const createVehicle = async (payload: Record<string, unknown>) => {
   return result.rows[0];
 };
 // ? ============================== Get Single Vehicle ==========================================================
-const getSingleVehicle = async (req: Request, res: Response) => {};
+const getSingleVehicle = async (vehicleId: string | number) => {
+  const result = await pool.query(`SELECT * FROM vehicles WHERE id=$1`, [
+    vehicleId,
+  ]);
+  return result;
+};
 // ? ============================== Update Vehicle ==========================================================
 const updateVehicle = async (req: Request, res: Response) => {};
 // ? ============================== Delete Vehicle ==========================================================
