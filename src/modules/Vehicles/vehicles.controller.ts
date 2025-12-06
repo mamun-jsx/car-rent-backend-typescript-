@@ -45,10 +45,13 @@ const getSingleVehicle = async (req: Request, res: Response) => {
 
 //? ================================ Update a vehicle =================================
 const updateVehicle = async (req: Request, res: Response) => {
-    const { vehicleId } = req.params;
-    const payload = req.body;
+  const { vehicleId } = req.params;
+  const payload = req.body;
   try {
-    const result = await vehicleServices.updateVehicle(payload, vehicleId as string | number);
+    const result = await vehicleServices.updateVehicle(
+      payload,
+      vehicleId as string | number
+    );
     res.status(200).json({
       success: true,
       message: "vehicle updated successfully",
@@ -60,7 +63,16 @@ const updateVehicle = async (req: Request, res: Response) => {
 };
 // ? ================================ Delete a vehicle ================================
 const deleteVehicle = async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
   try {
+    const result = await vehicleServices.deleteVehicle(
+      vehicleId as string | number
+    );
+    res.status(200).json({
+      success: true,
+      message: "vehicle deleted successfully",
+      data: result.rows[0],
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error?.message });
   }

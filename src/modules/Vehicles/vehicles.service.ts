@@ -39,17 +39,40 @@ const getSingleVehicle = async (vehicleId: string | number) => {
   return result;
 };
 // ? ============================== Update Vehicle ==========================================================
-const updateVehicle = async (payload:Record<string, unknown>, id:string | number) => {
-    const { vehicle_name, type, registration_number, daily_rent_price, availability_status } = payload;
-    const result =  await pool.query(
-        `UPDATE vehicles SET vehicle_name=$1, type=$2, registration_number=$3, daily_rent_price=$4, availability_status=$5, updated_at=NOW() WHERE id=$6 RETURNING *`,
-        [vehicle_name, type, registration_number, daily_rent_price, availability_status, id]
-    );
-    return result;
+const updateVehicle = async (
+  payload: Record<string, unknown>,
+  id: string | number
+) => {
+  const {
+    vehicle_name,
+    type,
+    registration_number,
+    daily_rent_price,
+    availability_status,
+  } = payload;
+
+  const result = await pool.query(
+    `UPDATE vehicles SET vehicle_name=$1, type=$2, registration_number=$3, daily_rent_price=$4, availability_status=$5, updated_at=NOW() WHERE id=$6 RETURNING *`,
+    [
+      vehicle_name,
+      type,
+      registration_number,
+      daily_rent_price,
+      availability_status,
+      id,
+    ]
+  );
+  return result;
 };
 
 // ? ============================== Delete Vehicle ==========================================================
-const deleteVehicle = async (req: Request, res: Response) => {};
+const deleteVehicle = async (id: string | number) => {
+  const result = await pool.query(
+    `DELETE FROM vehicles WHERE id=$1 RETURNING *`,
+    [id]
+  );
+  return result;
+};
 
 export const vehicleServices = {
   getAllVehicles,
