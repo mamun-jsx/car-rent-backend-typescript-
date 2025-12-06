@@ -10,7 +10,8 @@ app.use(express.json());
 
 initDB();
 //* =================================ROUTES====================================================================
-app.use("/users", userRoute); //user route is register
+app.use("/", userRoute); //*user route is register
+
 
 // Test route
 app.get("/", async (req: Request, res: Response) => {
