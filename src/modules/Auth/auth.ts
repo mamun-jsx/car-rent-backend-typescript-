@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { jwtSecretKey } from "./auth.service";
 
 // higher order function for role based access.
-const auth = () => {
+const auth = (...roles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization;
@@ -21,5 +21,4 @@ const auth = () => {
     }
   };
 };
-
 export default auth;
