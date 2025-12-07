@@ -20,11 +20,11 @@ const createBooking = async (req: Request, res: Response) => {
       return;
     }
     const result = await bookingService.createBooking(payload);
-    res
+   return res
       .status(201)
       .json({ message: "Booking created successfully", data: result });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 //? ================================Get booking ==========================================================
