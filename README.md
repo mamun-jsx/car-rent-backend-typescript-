@@ -6,11 +6,6 @@ The application supports role-based functionality:
 * **Admins** can manage vehicles (CRUD), create other admins, and oversee bookings.
 * **Users** can browse available vehicles and make bookings.
 
-
-
-[Image of car rental system architecture]
-
-
 ## ✨ Key Features
 
 * **User Authentication:** Secure Signup and Signin using JWT.
@@ -35,7 +30,7 @@ Follow these steps to set up and run the project locally.
 ```bash
 git clone this repo
 cd <CAR-RENT-TS>
-
+ backend : https://car-rent-ts-eight.vercel.app/ 
 npm install
 
 # Server Configuration
