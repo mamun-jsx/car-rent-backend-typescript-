@@ -17,3 +17,17 @@ const VEHICLE_API = {
   DELETE_VEHICLE: "/api/v1/vehicles/:vehicleId", // DELETE
 };
 
+// * ================================== booking API Endpoints ================================== //
+const BOOKING_API = {
+  CREATE_BOOKING: "/api/v1/bookings", // POST
+  GET_BOOKINGS: "/api/v1/bookings", // GET
+  GET_SINGLE_BOOKING: "/api/v1/bookings/:bookingId", // GET
+  UPDATE_BOOKING: "/api/v1/bookings/:bookingId", // PUT
+  DELETE_BOOKING: "/api/v1/bookings/:bookingId", // DELETE
+};
+
+// * ==================================  Auth APIs ================================== //
+const AUTH_API = {
+  SIGNUP: "/api/v1/auth/signup", // POST
+  SIGNIN: "/api/v1/auth/signin", // POST
+};

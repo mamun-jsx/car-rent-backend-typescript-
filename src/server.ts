@@ -4,6 +4,7 @@ import initDB from "./config/db";
 import { userRoute } from "./modules/Users/user.routes";
 import { vehicleRoute } from "./modules/Vehicles/vehicles.route";
 import { bookingRoute } from "./modules/Bookings/booking.route";
+import { authRoute } from "./modules/Auth/auth.route";
 dotenv.config();
 
 const app = express();
@@ -18,6 +19,7 @@ initDB(); // database initialization
 app.use("/", userRoute); //*user route is register
 app.use("/", vehicleRoute); //*vehicle route is register
 app.use("/", bookingRoute); //*vehicle route is register
+app.use("/", authRoute); //* auth route is register;
 //* ============================================================================================================
 
 //* =================================ROOT ROUTE=============================================================

@@ -27,11 +27,12 @@ const getUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getUser();
     // remove password from each user object
-    result.rows.map(user => delete user.password);
+    result?.rows?.map((user) => delete user.password);
+    // send response to frontend
     return res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
-      data: result.rows,
+      data: result.rows, 
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error?.message });
