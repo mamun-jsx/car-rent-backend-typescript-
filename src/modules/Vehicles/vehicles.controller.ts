@@ -14,6 +14,7 @@ const getAllVehicles = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error?.message });
   }
 };
+
 //? ================================= Create a vehicle ================================
 const createVehicle = async (req: Request, res: Response) => {
   try {

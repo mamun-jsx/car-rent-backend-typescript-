@@ -15,12 +15,12 @@ const auth = (...roles: string[]) => {
       //   decoded jwt token
       const decoded = jwt.verify(token, jwtSecretKey as string) as JwtPayload;
 
-      //  decoded and assign to request
+      //!______decoded and assign to request____________
       req.user = decoded;
       if (roles.length && !roles.includes(decoded.role as string)) {
         return res.status(403).json({ success: false, message: "Forbidden" });
-      }
-      
+      } 
+
       //? NEXT FUNCTION CALL
       next();
     } catch (error: any) {

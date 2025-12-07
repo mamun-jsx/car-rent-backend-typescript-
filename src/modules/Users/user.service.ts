@@ -16,7 +16,7 @@ const createUser = async (payload: Record<string, unknown>) => {
 // ? ============================== Get Users ==========================================================
 const getUser = async () => {
   const result = await pool.query(`SELECT * FROM users`);
-  
+
   return result;
 };
 // ? ============================== Update User ==========================================================
@@ -25,6 +25,7 @@ const updateUser = async (role: string, userId: string | number) => {
     `UPDATE users SET role=$1, updated_at=NOW() WHERE id=$2 RETURNING *`,
     [role, userId]
   );
+  delete result.rows[0].password; // remove password from response
   return result;
 };
 // ? ============================== Delete User ==========================================================
@@ -34,6 +35,7 @@ const deleteUser = async (userId: string | number) => {
     DELETE FROM users WHERE id=$1 RETURNING *`,
     [userId]
   );
+  delete result.rows[0].password; // remove password from response
   return result.rows[0];
 };
 
