@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { jwtSecretKey } from "./auth.service";
 
 // higher order function for role based access.
@@ -12,9 +12,16 @@ const auth = (...roles: string[]) => {
           .status(401)
           .json({ success: false, message: "Unauthorized" });
       }
-      const decoded = jwt.verify(token, jwtSecretKey as string);
-      console.log("decoded value --> ", decoded);
+      //   decoded jwt token
+      const decoded = jwt.verify(token, jwtSecretKey as string) as JwtPayload;
+
+      //  decoded and assign to request
       req.user = decoded;
+      if (roles.length && !roles.includes(decoded.role as string)) {
+        return res.status(403).json({ success: false, message: "Forbidden" });
+      }
+      
+      //? NEXT FUNCTION CALL
       next();
     } catch (error: any) {
       return res.status(401).json({ success: false, message: error?.message });
