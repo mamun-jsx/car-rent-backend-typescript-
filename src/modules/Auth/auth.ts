@@ -19,7 +19,7 @@ const auth = (...roles: string[]) => {
       req.user = decoded;
       if (roles.length && !roles.includes(decoded.role as string)) {
         return res.status(403).json({ success: false, message: "Forbidden" });
-      } 
+      }
 
       //? NEXT FUNCTION CALL
       next();
@@ -29,3 +29,5 @@ const auth = (...roles: string[]) => {
   };
 };
 export default auth;
+
+
