@@ -51,10 +51,21 @@ const getBooking = async () => {
 };
 
 // ? ============================== Update Booking ==========================================================
-const updateBooking = async () => {};
+const updateBookings = async (
+  id: string | number,
+  payload: Record<string, unknown>
+) => {
+  const { status } = payload;
+  const result = await pool.query(
+    `UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *`,
+    [status, id]
+  );
+  return result.rows[0];
+};
+
 
 export const bookingService = {
   createBooking,
   getBooking,
-  updateBooking,
+  updateBookings,
 };

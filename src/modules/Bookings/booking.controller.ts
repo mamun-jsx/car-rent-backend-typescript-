@@ -31,14 +31,32 @@ const createBooking = async (req: Request, res: Response) => {
 const getBooking = async (req: Request, res: Response) => {
   try {
     const result = await bookingService.getBooking();
-    return res.json({ success: true, message: "Bookings retrieved successfully", data: result });
+    return res.json({
+      success: true,
+      message: "Bookings retrieved successfully",
+      data: result,
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
+
+const getCustomerBookings = async (req: Request, res: Response) => {};
+
 //? ================================Update booking ==========================================================
 const updateBooking = async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  const payload = req.body;
   try {
+    const result = await bookingService.updateBookings(
+      bookingId as string | number,
+      payload
+    );
+    return res.json({
+      success: true,
+      message: "Booking updated successfully",
+      data: result,
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -48,4 +66,5 @@ export const bookingController = {
   createBooking,
   getBooking,
   updateBooking,
+  getCustomerBookings,
 };
