@@ -11,7 +11,7 @@ const createBooking = async (req: Request, res: Response) => {
     rent_end_date,
     total_price: number,
   } = req.body;
-  
+
   try {
     if (!customer_id || !vehicle_id || !rent_start_date || !rent_end_date) {
       return res.status(400).json({ message: "All fields are required" });
@@ -30,6 +30,8 @@ const createBooking = async (req: Request, res: Response) => {
 //? ================================Get booking ==========================================================
 const getBooking = async (req: Request, res: Response) => {
   try {
+    const result = await bookingService.getBooking();
+    return res.json({ success: true, message: "Bookings retrieved successfully", data: result });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

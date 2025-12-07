@@ -45,7 +45,11 @@ const createBooking = async (payload: Record<string, unknown>) => {
 };
 
 // ? ============================== Get Booking ==========================================================
-const getBooking = async () => {};
+const getBooking = async () => {
+  const result = await pool.query(`SELECT * FROM bookings`);
+  return result.rows;
+};
+
 // ? ============================== Update Booking ==========================================================
 const updateBooking = async () => {};
 
