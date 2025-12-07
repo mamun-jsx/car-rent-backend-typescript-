@@ -26,6 +26,7 @@ const loginUser = async (email: string, password: string) => {
     { expiresIn: "7d" }
   );
   //   return token and user data
+  delete user?.password; // remove password from user object
   return { token, user };
 };
 
