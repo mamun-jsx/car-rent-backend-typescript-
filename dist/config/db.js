@@ -1,15 +1,13 @@
 import { Pool } from "pg";
 import config from ".";
-
 //DB
 export const pool = new Pool({
-  connectionString: `${config.connectionString}`,
-  ssl: { rejectUnauthorized: false },
+    connectionString: `${config.connectionString}`,
+    ssl: { rejectUnauthorized: false },
 });
-
 const initDB = async () => {
-  // ? User table
-  await pool.query(`
+    // ? User table
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS users(
         id SERIAL PRIMARY KEY,
         name VARCHAR(200) NOT NULL,
@@ -21,8 +19,8 @@ const initDB = async () => {
         updated_at TIMESTAMP DEFAULT NOW()       
         )
         `);
-  // ? Vehicle table
-  await pool.query(`
+    // ? Vehicle table
+    await pool.query(`
     CREATE TABLE IF NOT EXISTS vehicles(
     id SERIAL PRIMARY KEY,
     vehicle_name VARCHAR(100) NOT NULL,
@@ -35,8 +33,8 @@ const initDB = async () => {
     updated_at TIMESTAMP DEFAULT NOW()        
     )
     `);
-  // ? Booking table
-  await pool.query(`
+    // ? Booking table
+    await pool.query(`
     CREATE TABLE IF NOT EXISTS bookings(
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -50,5 +48,4 @@ const initDB = async () => {
     )
     `);
 };
-
 export default initDB;

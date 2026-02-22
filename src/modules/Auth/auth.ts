@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { jwtSecretKey } from "./auth.service";
+import config from "../../config";
 
 // higher order function for role based access.
 const auth = (...roles: string[]) => {
@@ -13,7 +13,10 @@ const auth = (...roles: string[]) => {
           .json({ success: false, message: "Unauthorized" });
       }
       //   decoded jwt token
-      const decoded = jwt.verify(token, jwtSecretKey as string) as JwtPayload;
+      const decoded = jwt.verify(
+        token,
+        config.jwtSecret as string,
+      ) as JwtPayload;
 
       //!______decoded and assign to request____________
       req.user = decoded;
@@ -29,5 +32,3 @@ const auth = (...roles: string[]) => {
   };
 };
 export default auth;
-
-

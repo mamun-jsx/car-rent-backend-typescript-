@@ -1,0 +1,1195 @@
+{
+  "info": {
+    "_postman_id": "B6A2_Rbac_Auto_Switch",
+    "name": "B6A2",
+    "description": "Full RBAC test collection. Auto-signup uses timestamped emails so signup runs every execution.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "B6A2_Rbac_Auto_Switch"
+  },
+  "item": [
+    {
+      "name": "Initialize Variables",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Initialize core vars and choose signup mode A (auto timestamped) by default",
+              "if (!pm.collectionVariables.get('SIGNUP_MODE')) pm.collectionVariables.set('SIGNUP_MODE','A');",
+              "pm.collectionVariables.set('CURRENT_ROLE','admin');",
+              "",
+              "// Create timestamp suffix for emails when SIGNUP_MODE === 'A'",
+              "let ts = Math.floor(Date.now()/1000);",
+              "pm.collectionVariables.set('TS', ts.toString());",
+              "",
+              "if (pm.collectionVariables.get('SIGNUP_MODE') === 'A') {",
+              "  pm.collectionVariables.set('ADMIN_EMAIL', 'admin+' + pm.collectionVariables.get('TS') + '@example.com');",
+              "  pm.collectionVariables.set('CUSTOMER_EMAIL', 'customer+' + pm.collectionVariables.get('TS') + '@example.com');",
+              "} else {",
+              "  // keep whatever is set",
+              "  if (!pm.collectionVariables.get('ADMIN_EMAIL')) pm.collectionVariables.set('ADMIN_EMAIL','admin@example.com');",
+              "  if (!pm.collectionVariables.get('CUSTOMER_EMAIL')) pm.collectionVariables.set('CUSTOMER_EMAIL','customer@example.com');",
+              "}",
+              "",
+              "// default other fields if not set",
+              "if (!pm.collectionVariables.get('ADMIN_NAME')) pm.collectionVariables.set('ADMIN_NAME','Admin User');",
+              "if (!pm.collectionVariables.get('ADMIN_PASSWORD')) pm.collectionVariables.set('ADMIN_PASSWORD','admin123');",
+              "if (!pm.collectionVariables.get('ADMIN_PHONE')) pm.collectionVariables.set('ADMIN_PHONE','01711111111');",
+              "if (!pm.collectionVariables.get('CUSTOMER_NAME')) pm.collectionVariables.set('CUSTOMER_NAME','Customer User');",
+              "if (!pm.collectionVariables.get('CUSTOMER_PASSWORD')) pm.collectionVariables.set('CUSTOMER_PASSWORD','customer123');",
+              "if (!pm.collectionVariables.get('CUSTOMER_PHONE')) pm.collectionVariables.set('CUSTOMER_PHONE','01722222222');",
+              "",
+              "// set login placeholders for first signin (admin)",
+              "pm.collectionVariables.set('LOGIN_EMAIL', pm.collectionVariables.get('ADMIN_EMAIL'));",
+              "pm.collectionVariables.set('LOGIN_PASSWORD', pm.collectionVariables.get('ADMIN_PASSWORD'));",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Initialization ok', function() {",
+              "  pm.expect(pm.collectionVariables.get('CURRENT_ROLE')).to.eql('admin');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/",
+          "host": ["{{BASE_URL}}"],
+          "path": [""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signup (Admin)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin signup returns 201 or 400/409 if already exists', function() {",
+              "  pm.expect(pm.response.code).to.be.oneOf([201,400,409]);",
+              "});",
+              "try {",
+              "  let j = pm.response.json();",
+              "  if (j && j.data && (j.data.id || j.data._id)) {",
+              "    pm.collectionVariables.set('ADMIN_ID', j.data.id || j.data._id);",
+              "  }",
+              "} catch (e) { console.log('No JSON or no id in signup response', e); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{ADMIN_NAME}}\",\n  \"email\": \"{{ADMIN_EMAIL}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\",\n  \"phone\": \"{{ADMIN_PHONE}}\",\n  \"role\": \"admin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signup",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signup"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signup (Customer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer signup returns 201 or 400/409 if already exists', function() {",
+              "  pm.expect(pm.response.code).to.be.oneOf([201,400,409]);",
+              "});",
+              "try {",
+              "  let j = pm.response.json();",
+              "  if (j && j.data && (j.data.id || j.data._id)) {",
+              "    pm.collectionVariables.set('CUSTOMER_ID', j.data.id || j.data._id);",
+              "  }",
+              "} catch (e) { console.log('No JSON or no id in signup response', e); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{CUSTOMER_NAME}}\",\n  \"email\": \"{{CUSTOMER_EMAIL}}\",\n  \"password\": \"{{CUSTOMER_PASSWORD}}\",\n  \"phone\": \"{{CUSTOMER_PHONE}}\",\n  \"role\": \"customer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signup",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signup"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signin (Shared)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Signin returns 200', function () { pm.response.to.have.status(200); });",
+              "let json = pm.response.json();",
+              "let role = pm.collectionVariables.get('CURRENT_ROLE');",
+              "if (json && json.data && json.data.token) {",
+              "  pm.collectionVariables.set('CURRENT_TOKEN', json.data.token);",
+              "  if (role === 'admin') {",
+              "    pm.collectionVariables.set('TOKEN_ADMIN', json.data.token);",
+              "    pm.collectionVariables.set('ADMIN_ID', (json.data.user && (json.data.user.id || json.data.user._id)) || pm.collectionVariables.get('ADMIN_ID'));",
+              "  } else {",
+              "    pm.collectionVariables.set('TOKEN_CUSTOMER', json.data.token);",
+              "    pm.collectionVariables.set('CUSTOMER_ID', (json.data.user && (json.data.user.id || json.data.user._id)) || pm.collectionVariables.get('CUSTOMER_ID'));",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{LOGIN_EMAIL}}\",\n  \"password\": \"{{LOGIN_PASSWORD}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signin",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Vehicle (Admin - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin create vehicle -> 201', function() { pm.response.to.have.status(201); });",
+              "try {",
+              "  let j = pm.response.json();",
+              "  if (j && j.data && (j.data.id || j.data._id)) {",
+              "    pm.collectionVariables.set('VEHICLE_ID', j.data.id || j.data._id);",
+              "    console.log('VEHICLE_ID set to:', j.data.id || j.data._id);",
+              "  }",
+              "} catch (e) { console.log('No JSON or no id in vehicle creation response', e); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicle_name\": \"Toyota Camry 2025\",\n  \"type\": \"car\",\n  \"registration_number\": \"REG-ADMIN-{{TS}}\",\n  \"daily_rent_price\": 80,\n  \"availability_status\": \"available\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Vehicles (Public - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Get all vehicles -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Vehicle by ID (Public - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Get vehicle by ID -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles/:vehicleId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles", ":vehicleId"],
+          "variable": [
+            {
+              "key": "vehicleId",
+              "value": "{{VEHICLE_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Vehicle (Admin - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin update vehicle -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicle_name\": \"Toyota Camry 2025 Premium\",\n  \"daily_rent_price\": 85\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles/:vehicleId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles", ":vehicleId"],
+          "variable": [
+            {
+              "key": "vehicleId",
+              "value": "{{VEHICLE_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Users (Admin - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin get users -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Dummy User (Admin Test)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin dummy user signup -> 201/400/409', function() { pm.expect(pm.response.code).to.be.oneOf([201,400,409]); });",
+              "try {",
+              "  let j = pm.response.json();",
+              "  console.log('Admin dummy user response status:', pm.response.code);",
+              "  console.log('Admin dummy user response:', JSON.stringify(j));",
+              "  let userId = null;",
+              "  if (j && j.data) {",
+              "    userId = j.data.id || j.data._id || j.data.user_id;",
+              "    if (!userId && j.data.user) {",
+              "      userId = j.data.user.id || j.data.user._id;",
+              "    }",
+              "  } else if (j && (j.id || j._id)) {",
+              "    userId = j.id || j._id;",
+              "  }",
+              "  if (userId) {",
+              "    pm.collectionVariables.set('ADMIN_DUMMY_USER_ID', userId);",
+              "    console.log('✅ ADMIN_DUMMY_USER_ID set to:', userId);",
+              "  } else {",
+              "    console.log('⚠️ Could not extract ADMIN_DUMMY_USER_ID from response');",
+              "  }",
+              "} catch (e) {",
+              "  console.log('❌ Error parsing admin dummy user response:', e);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"OtherUser-{{TS}}\",\n  \"email\": \"otheruser+{{TS}}@example.com\",\n  \"password\": \"otherpass123\",\n  \"phone\": \"01730000000\",\n  \"role\": \"customer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signup",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signup"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Dummy User (Admin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users/:userId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users", ":userId"],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "{{ADMIN_DUMMY_USER_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signin (Customer)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Switch to customer credentials before signin",
+              "pm.collectionVariables.set('CURRENT_ROLE', 'customer');",
+              "pm.collectionVariables.set('LOGIN_EMAIL', pm.collectionVariables.get('CUSTOMER_EMAIL'));",
+              "pm.collectionVariables.set('LOGIN_PASSWORD', pm.collectionVariables.get('CUSTOMER_PASSWORD'));"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer signin -> 200', function() { pm.response.to.have.status(200); });",
+              "let j = pm.response.json();",
+              "if (j && j.data && j.data.token) {",
+              "  pm.collectionVariables.set('CURRENT_TOKEN', j.data.token);",
+              "  pm.collectionVariables.set('TOKEN_CUSTOMER', j.data.token);",
+              "  if (j.data.user && (j.data.user.id || j.data.user._id)) pm.collectionVariables.set('CUSTOMER_ID', j.data.user.id || j.data.user._id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{LOGIN_EMAIL}}\",\n  \"password\": \"{{LOGIN_PASSWORD}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signin",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Dummy User (Customer Test)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer dummy user signup -> 201/400/409', function() { pm.expect(pm.response.code).to.be.oneOf([201,400,409]); });",
+              "try {",
+              "  let j = pm.response.json();",
+              "  console.log('Customer dummy user response status:', pm.response.code);",
+              "  console.log('Customer dummy user response:', JSON.stringify(j));",
+              "  let userId = null;",
+              "  if (j && j.data) {",
+              "    userId = j.data.id || j.data._id || j.data.user_id;",
+              "    if (!userId && j.data.user) {",
+              "      userId = j.data.user.id || j.data.user._id;",
+              "    }",
+              "  } else if (j && (j.id || j._id)) {",
+              "    userId = j.id || j._id;",
+              "  }",
+              "  if (userId) {",
+              "    pm.collectionVariables.set('CUSTOMER_DUMMY_USER_ID', userId);",
+              "    console.log('✅ CUSTOMER_DUMMY_USER_ID set to:', userId);",
+              "  } else {",
+              "    console.log('⚠️ Could not extract CUSTOMER_DUMMY_USER_ID from response');",
+              "  }",
+              "} catch (e) {",
+              "  console.log('❌ Error parsing customer dummy user response:', e);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"CustomerDummy-{{TS}}\",\n  \"email\": \"customerdummy+{{TS}}@example.com\",\n  \"password\": \"dummypass123\",\n  \"phone\": \"01740000000\",\n  \"role\": \"customer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/auth/signup",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "auth", "signup"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Create Vehicle (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot create vehicle - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicle_name\": \"Customer Car\",\n  \"type\": \"car\",\n  \"registration_number\": \"REG-CUST-{{TS}}\",\n  \"daily_rent_price\": 30,\n  \"availability_status\": \"available\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Update Vehicle (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot update vehicle - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"daily_rent_price\": 35\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles/:vehicleId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles", ":vehicleId"],
+          "variable": [
+            {
+              "key": "vehicleId",
+              "value": "{{VEHICLE_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Delete Vehicle (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot delete vehicle - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles/:vehicleId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles", ":vehicleId"],
+          "variable": [
+            {
+              "key": "vehicleId",
+              "value": "{{VEHICLE_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Get All Users (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot view all users - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Delete User (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot delete other user - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users/:userId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users", ":userId"],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "{{CUSTOMER_DUMMY_USER_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Try Update Other User (Customer - Forbidden)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer cannot update other profile (admin) - 401/403 expected', function() { pm.expect(pm.response.code).to.be.oneOf([401,403]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"name\": \"Hacked Admin Name\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users/:userId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users", ":userId"],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "{{ADMIN_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Own Profile (Customer - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Customer can update own profile -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"name\": \"Updated Customer Name\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/users/:userId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "users", ":userId"],
+          "variable": [
+            {
+              "key": "userId",
+              "value": "{{CUSTOMER_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Booking (Customer - Success)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "if (!pm.collectionVariables.get('FUTURE_START')) {",
+              "  let s = new Date(); s.setDate(s.getDate() + 7);",
+              "  let e = new Date(); e.setDate(e.getDate() + 10);",
+              "  function toYMD(d){return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);}",
+              "  pm.collectionVariables.set('FUTURE_START', toYMD(s));",
+              "  pm.collectionVariables.set('FUTURE_END', toYMD(e));",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Create booking -> 201', function() { pm.response.to.have.status(201); });",
+              "try {",
+              "  let j = pm.response.json();",
+              "  console.log('Booking response:', JSON.stringify(j));",
+              "  let bookingId = null;",
+              "  if (j && j.data) {",
+              "    bookingId = j.data.id || j.data._id || j.data.booking_id;",
+              "  } else if (j && (j.id || j._id)) {",
+              "    bookingId = j.id || j._id;",
+              "  }",
+              "  if (bookingId) {",
+              "    pm.collectionVariables.set('BOOKING_ID', bookingId);",
+              "    console.log('✅ BOOKING_ID set to:', bookingId);",
+              "  } else {",
+              "    console.log('⚠️ Could not extract booking ID from response');",
+              "  }",
+              "} catch (e) {",
+              "  console.log('❌ Error parsing booking response:', e);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_id\": {{CUSTOMER_ID}},\n  \"vehicle_id\": {{VEHICLE_ID}},\n  \"rent_start_date\": \"{{FUTURE_START}}\",\n  \"rent_end_date\": \"{{FUTURE_END}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/bookings",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "bookings"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Own Bookings (Customer - Success)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/bookings",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "bookings"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Bookings (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN_ADMIN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/bookings",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "bookings"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Cancel Booking (Customer - Success)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{CURRENT_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"status\": \"cancelled\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/bookings/:bookingId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "bookings", ":bookingId"],
+          "variable": [
+            {
+              "key": "bookingId",
+              "value": "{{BOOKING_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+
+    {
+      "name": "Delete Vehicle (Admin - Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Admin delete vehicle -> 200', function() { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN_ADMIN}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/vehicles/:vehicleId",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "v1", "vehicles", ":vehicleId"],
+          "variable": [
+            {
+              "key": "vehicleId",
+              "value": "{{VEHICLE_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": ""
+    },
+    {
+      "key": "SIGNUP_MODE",
+      "value": "A"
+    },
+    {
+      "key": "TS",
+      "value": ""
+    },
+    {
+      "key": "CURRENT_ROLE",
+      "value": "admin"
+    },
+    {
+      "key": "CURRENT_TOKEN",
+      "value": ""
+    },
+    {
+      "key": "ADMIN_NAME",
+      "value": "Admin User"
+    },
+    {
+      "key": "ADMIN_EMAIL",
+      "value": ""
+    },
+    {
+      "key": "ADMIN_PASSWORD",
+      "value": "admin123"
+    },
+    {
+      "key": "ADMIN_PHONE",
+      "value": "01711111111"
+    },
+    {
+      "key": "ADMIN_ROLE",
+      "value": "admin"
+    },
+    {
+      "key": "CUSTOMER_NAME",
+      "value": "Customer User"
+    },
+    {
+      "key": "CUSTOMER_EMAIL",
+      "value": ""
+    },
+    {
+      "key": "CUSTOMER_PASSWORD",
+      "value": "customer123"
+    },
+    {
+      "key": "CUSTOMER_PHONE",
+      "value": "01722222222"
+    },
+    {
+      "key": "CUSTOMER_ROLE",
+      "value": "customer"
+    },
+    {
+      "key": "LOGIN_EMAIL",
+      "value": ""
+    },
+    {
+      "key": "LOGIN_PASSWORD",
+      "value": ""
+    },
+    {
+      "key": "TOKEN_ADMIN",
+      "value": ""
+    },
+    {
+      "key": "TOKEN_CUSTOMER",
+      "value": ""
+    },
+    {
+      "key": "ADMIN_ID",
+      "value": ""
+    },
+    {
+      "key": "CUSTOMER_ID",
+      "value": ""
+    },
+    {
+      "key": "ADMIN_DUMMY_USER_ID",
+      "value": ""
+    },
+    {
+      "key": "CUSTOMER_DUMMY_USER_ID",
+      "value": ""
+    },
+    {
+      "key": "VEHICLE_ID",
+      "value": ""
+    },
+    {
+      "key": "BOOKING_ID",
+      "value": ""
+    },
+    {
+      "key": "FUTURE_START",
+      "value": "2026-01-15"
+    },
+    {
+      "key": "FUTURE_END",
+      "value": "2026-01-20"
+    }
+  ]
+}
